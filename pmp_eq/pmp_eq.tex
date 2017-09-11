@@ -1,0 +1,162 @@
+\documentclass[14pt,a4paper,final]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\begin{document}
+Passive Motion Paradigm Equations\\
+\begin{equation}
+f(x)=k_{ext}(x_d-x)
+\end{equation}
+\begin{equation}
+\tau=J^Tf(x)
+\end{equation}
+\begin{equation}
+\dot{q}=A_{int}\tau
+\end{equation}
+\begin{equation}
+\dot{x}=J\dot{q}
+\end{equation}
+\begin{equation}
+x(t)=\int J \dot{q} dt
+\end{equation}
+
+Equations related to the floating base system\\
+Generalized Cooridinates
+
+\[q = \begin{bmatrix}
+x_b \\
+y_b \\
+\theta_b \\
+q_1 \\
+q_2
+\end{bmatrix}
+\]
+
+Dynamics, \\
+
+$ M(q)\ddot{q}+C(q,\dot{q})\dot{q}+G(q) = \tau $ \\
+\\
+$h(q,\dot{q})=C(q,\dot{q})\dot{q}+G(q)$ \\ 
+Using the above equation \\
+$ M(q)\ddot{q}+h(q,\dot{q}) = \tau $ \\
+Control Laws, \\
+
+$ M(q)\ddot{q}+h(q,\dot{q}) - J_1^TF_1 -J_2^TF_2 = 0 $ \\
+
+External Forces, \\
+
+\[F_1 = \begin{bmatrix}
+^{1}F_x \\
+^{1}F_y \\
+^{1}\tau \\
+\end{bmatrix}
+\]
+\[F_2 = \begin{bmatrix}
+^{2}F_x \\
+^{2}F_y \\
+^{2}\tau \\
+\end{bmatrix}
+\]
+
+Rearranging the control law, 
+\[B = \begin{bmatrix}
+J_1^T && J_2^T
+\end{bmatrix}
+\]
+\[u = \begin{bmatrix}
+F_1 \\
+F_2
+\end{bmatrix}
+\] \\
+
+
+$ M(q)\ddot{q}+h(q,\dot{q}) = Bu $ \\
+
+States Variables,
+
+\begin{equation}
+x_1 = q 
+\end{equation}
+\begin{equation}
+x_2 = \dot{q}
+\end{equation}
+
+\[x = \begin{bmatrix}
+x_1 \\
+x_2
+\end{bmatrix}
+\] 
+
+\[\dot{x} = \begin{bmatrix}
+\dot{x}_1 \\
+\dot{x}_2
+\end{bmatrix}
+\] 
+
+\[\dot{x} = \begin{bmatrix}
+x_2 \\
+M^{-1}[Bu-h(x_1,x_2)]
+\end{bmatrix}
+\] 
+
+\[ \dot{x} =
+\begin{bmatrix}
+x_2 \\
+-M^{-1}h(x_1,x_2)
+\end{bmatrix} + \begin{bmatrix}
+0 \\
+M^{-1}B
+\end{bmatrix} u
+\]
+
+\[\dot{x} = f(x) + g(x)u
+\] 
+
+
+Output Variables \\
+
+\[y = \begin{bmatrix}
+x_b \\
+y_B \\
+\theta_b
+\end{bmatrix}
+\] 
+
+\[y = \begin{bmatrix}
+q_1 \\
+q_2 \\
+\end{bmatrix}
+\]
+
+Output Equation,
+\begin{equation}
+\dot{y} = S\dot{q}
+\end{equation} 
+
+\begin{equation}
+\ddot{y} = S\ddot{q} \Rightarrow SM^{-1}[Bu-h]
+\end{equation}
+
+\begin{equation}
+\ddot{y} = -SM^{-1}h + SM^{-1}B u
+\end{equation}
+
+\begin{equation}
+\ddot{y} = h(u)
+\end{equation}
+
+Considering the joint constraints,
+Control Laws, \\
+
+$ M(q)\ddot{q}+h(q,\dot{q}) - J_1^TF_1 -J_2^TF_2 -J_c^TF_c = 0 $ \\
+
+$ M(q)\ddot{q}+h(q,\dot{q}) = Bu + J_c^TF_c$ \\
+
+Estimating constraint forces, \\
+
+$J_c\ddot{q} = 0 \Rightarrow J_c M^{-1}[Bu + J_c^TF_c-h] = 0$ \\
+
+$F_c = (J_cM^{-1}J_c^T)^{-1}J_cM^{-1}[h-Bu]$
+
+\end{document}
