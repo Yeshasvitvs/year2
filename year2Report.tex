@@ -16,9 +16,12 @@
 \usepackage{url}
 \usepackage{float}
 \usepackage{lscape}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \def\thesection{\arabic{section}}
 \def\thesubsection{\thesection.\arabic{subsection}}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
 \setcounter{secnumdepth}{3}
 \setlength{\parindent}{4em}
 \setlength{\parskip}{1em}
@@ -100,14 +103,12 @@ Martin-Martin Roberto and Oliver Brock ~\cite{martin2014online} presented an onl
 
 The choice of a well established framework on human motor control to facilitate the basic software infrastructure for my research is a crucial step. Towards this end I did review of papers on the framework of Active Inference ~\cite{friston2015active},~\cite{friston2011action} put forward by Prof. Karl Friston. Also I studied the framework of Passive Motion Paradigm(PMP) ~\cite{mohan2011passive}, ~\cite{mohan2013inference} championed by our colleagues Dr. Vishwanathan Mohan and Prof. Pietro Morasso from the Italian Institute of Technology.
 
-The momentum based topology estimation algorithm presented in this paper fundamentally differs from prior work. Visual information has been used as the most dominant sensory modality in articulation model estimation. But while manipulating an articulated object, another key information available is the interaction forces and torques. The main contribution of this paper is an articulation model estimation algorithm that uses momentum information and the interaction wrench information. To the best of our knowledge no prior work has been published which takes into account, the momentum and the interaction wrenches present while manipulating articulated objects. 
-	
-The novelty of my research work involves developing an articulation object model estimation framework for a highly complex humanoid robot(iCub). As a part of the Dynamic Touch and Interaction team and in collaboration with Dynamic Interaction Control  team, I am  exploring the possibilities of using interaction force along with visual perception  to estimate the kinematic structure and dynamic properties of the articulated objects. From the visual perception kinematic properties of the artiulated can be estimated but by also using interaction force we believe to estimate the dynamic properties. This facilititates for better control during object manipulation. A bayesian framework is proposed in ~\cite{nori2015simultaneous} for simultaneous state and dynamics estimation in presence of multiple redundant sensory information. But in the case of manipulation of articulated objects state information will estimated using visual inputs. 
-
-
+Visual information has been used as the most dominant sensory modality in articulation model estimation. But while manipulating an articulated object, another key information available is the interaction wrench. As a part of the Dynamic Touch and Interaction team and in collaboration with Dynamic Interaction Control  team, I am  exploring the possibilities of using interaction wrench along with visual perception  to estimate the kinematic structure and dynamic properties of articulated objects. From the visual perception kinematic properties of the artiulated can be estimated but by also using interaction wrench information we believe one can estimate the dynamic properties too. This facilititates for better control during object manipulation. A bayesian framework is proposed in ~\cite{nori2015simultaneous} for simultaneous state and dynamics estimation in presence of multiple redundant sensory information. But in the case of manipulation of articulated objects state information will estimated using visual inputs. 
+ 
 \subsection{Methodology and Workplan}
+\subsubsection{Modelling}
 
-We modelled two simple artitulated objects using Simulation Description Format (SDF) to be used in Gazebo simulation environment. The objects contain two links connected through a \textit{prismatic} joint, \textit{\textbf{P}} in one (Fig. \ref{pmodel}) and a \textit{revolute} joint, \textit{\textbf{R}} in the other  (Fig. \ref{rmodel}). The reasoning behind this modelling is that most real life articulated objects can be represented in this simplified form. The cylindrical elements in black color are the handle links and the rectangular elements in yellow color are articulated object links.
+We modelled two simple artitulated objects using Simulation Description Format (SDF) to be used in Gazebo simulation environment. The objects contain two links connected through a \textit{prismatic} joint, \textit{\textbf{P}} in one (Fig. \ref{pmodel}) and a \textit{revolute} joint, \textit{\textbf{R}} in the other  (Fig. \ref{rmodel}). The reasoning behind this modelling is that most real life articulated objects can be represented in this simplified form. The cylindrical elements in black color are the handle links and the rectangular elements in yellow color are articulated object links. The handle links of the articulated objects are connected to object links through a fixed joint and one of the handles is anchored to the world in gazebo through a fixed joint and this also anchors the object link attached to that handle. The reasoning behind this choice is that many articulated objects have one of their links either grounded or are quite heavy to move compared to the freely movable link. 
 
 \begin{figure}[H]
 	\begin{subfigure}[b]{0.5\textwidth}
@@ -123,9 +124,10 @@ We modelled two simple artitulated objects using Simulation Description Format (
 		\label{rmodel}
 	\end{subfigure}
 	\caption{Articulated Object Models}
-	\label{icub_mani}
+	\label{objects}
 \end{figure}
 
+\subsubsection{Experimental Scenario}
 The experimental scenario we want to test is as indicated in the figure \ref{icub_object}, where the icub robot is holding the articulated object at the handles and performs explorative actions to estimate the
 articulation model present between the links of an articulated object.
 
@@ -134,20 +136,28 @@ articulation model present between the links of an articulated object.
 		\centering
 		\includegraphics[scale=0.22]{figures/icub_object_side.jpg}
 		\caption{Side View}
-		\label{pmodel}
+		\label{icub_object_side_view}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.5\textwidth}
 		\centering
 		\includegraphics[scale=0.22]{figures/icub_object_top.jpg}
 		\caption{Top View}
-		\label{rmodel}
+		\label{icub_object_top_view}
 	\end{subfigure}
 	\caption{Experimental Scenario: iCub manipulating an articulated object}
 	\label{icub_object}
 \end{figure}
 
-
+\subsubsection{Implemetation Details}
+\subsubsection*{Visual Perception}
 I started working on the submodules of vision and force/torque in the perception module of the software architecture shown in figure \ref{SoftArc}. Obtaining robust 3D pose values of rigid bodies is still an open challenge in the field of computer vision. Vast amount of research has been carried on tracking rigid bodies either using markers, features or depth information. As visual perception is not the main goal of this work, I made use of aruco library ~\cite{Aruco2014} which is an opensource software for augumented reality applications based on OpenCV. Figure \ref{markersboard} shows an array of markers and figure \ref{marker_stapler} shows the markers attached on the two moving parts of a stapler with their detected 3D pose shows with an axes.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.3]{figures/SoftwareArch_year1.png}
+	\caption{Software Architechture}		
+	\label{SoftArc}
+\end{figure}
 
 \begin{figure}[H]
 	\begin{subfigure}[b]{0.5\textwidth}
@@ -166,56 +176,248 @@ I started working on the submodules of vision and force/torque in the perception
 	\label{armarkers}
 \end{figure}
 
-Coming to force/torque perception, iCub robot is equipped with six proximal six-axis F/T sensors as shown in the figure. While using the iCub robot external wrenches can be estimated using the techniques develoed for whole-body control ~\cite{nori2015icub}. At this point the current icub model described using an URDF (Universal Robot Description Format) file in simulation environment did not include the hands of the robot. I created a new URDF fiels for the hands of the robot included along with collision elements and did contact tuning in gazebo simulation environment.
+\subsubsection*{Wrench Perception}
+Coming to force/torque perception, iCub robot is equipped with six proximal six-axis F/T sensors as shown in the figure \ref{icub_ft}. While using the iCub robot external wrenches can be estimated using the techniques develoed for whole-body control ~\cite{nori2015icub}. At this point the current icub model described using an URDF (Universal Robot Description Format) file in simulation environment did not include the hands of the robot. I created new URDF files ~\cite{icub_hands_urdf} for the hands of the robot included along with collision elements and did contact tuning ~\cite{icub_hands_contact_tuning} in gazebo simulation environment. Later two frames as shown in the figure \ref{hands_frames} are defined at the center of the hands at which we can estimate the wrench acting on the robot. 
 
 \begin{figure}[H]
   \centering
   \includegraphics[scale=0.5]{figures/icub_ft.png}
-  \caption{iCub robot F/T Sensors}
+  \caption{iCub robot: location of six proximal F/T Sensors}
   \label{icub_ft}
 \end{figure}
 
+\begin{figure}[H]
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[scale=0.21]{figures/hands_front.png}
+		\caption{Front View}
+		\label{hands_front_view}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[scale=0.22]{figures/hands_side.png}
+		\caption{Side View}
+		\label{hands_side_view}
+	\end{subfigure}
+	\caption{iCub hands with new frames}
+	\label{hands_frames}
+\end{figure}
 
+A simulated 6 axis Force-Torque sensor plugin ~\cite{hoffman2014yarp} is placed at the fixed joint connecting object link to its handle, to measure the external wrenches acting on the object links. In an ideal case where the iCub robot is having a stable power grasp of the object, the wrench measurements read from this Force-Torque sensor plugin should be similar to the measurements obtained at the hands of the robot provided that the direction of measurement is the same. But in practice the hands of the iCub robot are quite complex to achieve a stable power grasp.
 
-The handle links are connected to object links through a fixed joint, where a simulated 6 axis Force-Torque sensor plugin ~\cite{hoffman2014yarp} is placed, to measure the external wrenches acting on the object links.  One of the handles is anchored to the world in gazebo through a fixed joint and this also anchors the object link attached to that handle. The reasoning behind this choice is that many articulated objects have one of their links either grounded or are quite heavy to move compared to the freely movable link. 
+\subsubsection*{Articulation Estimation Algorithm}
+
+Visual information has been used as the most dominant sensory modality in articulation model estimation. But while manipulating an articulated object, another key information available is the interaction forces and torques. We came up with an articulation estimation algorithm that uses momentum information and the interaction wrench information.
+
+In this work we use spatial vectors ~\cite{featherstone2014rigid}, which are 6D vectors that are proven to be a powerful tool in analysing rigid-body dynamics. Unlike the standard notation of spatial vectors, in the spatial motion vectors we use the linear part first followed by the angular part and in the spatial force vectors we use forces first followed by moments. In a complex articulated system consisting of several links connected through joints of several degrees of freedom (e.g humanoid robots), the total momentum of the system is the sum of link momenta, provided that the link momenta are expressed in a common reference frame. For humanoid robots, it is commonly expressed after projecting each link momenta to the robot's Center of Mass (CoM, $G$) and hence it is called centroidal momentum ~\cite{orin2013centroidal}. 
+\begin{equation}
+  ^Gh=\sum\limits_{i=1}^n \ ^GX_i \ h_i = \sum\limits_{i=1}^n \ ^GX_i \ M_i \ \mathrm{v}_i
+\end{equation}
+Where, 
+\begin{itemize}
+  \item $^Gh$ is the centroidal momentum of the system.
+  \item  $n$ is the total number of links in the articulated system.
+  \item $^GX_i$ is the spatial transformation from the body reference frame to the center of mass of the system. 
+\end{itemize}
+
+For our modelling, the total momentum of the articulated object expressed with respect to the inertial frame of reference is given by,
+\begin{equation}
+  h =  X_1 \ M_1 \ \mathrm{v}_1 + X_2 \ M_2 \ \mathrm{v}_2
+ \label{totalMom}
+\end{equation}
+
+In the case of a rigid body system containing a kinematic tree structure, the velocity of a body $i$, expressed in its body frame, is given by,
+\begin{equation}
+  \mathrm{v}_i = \  ^iX_{\lambda(i)} \ \mathrm{v}_{\lambda(i)} + \mathrm{v}_{Ji}
+  \label{generalBodyVel}
+\end{equation}
+where,
+  \begin{itemize}
+    \item $\mathrm{v}_i$ is the twist of the $i$-th link expressed in its body frame.
+    \item $\mathrm{v}_{\lambda(i)}$ is the twist of the parent link of $i$-th link, expressed in its body frame. 
+    \item $^iX_{\lambda(i)}$ is the spatial transformation from the parent link to the child link.
+    \item $\mathrm{v}_{Ji}$ is the twist of the $i$-th joint, connecting link $i$ to its parents, expressed in the body frame of link $i$.
+  \end{itemize}
+   
+  The equation(\ref{generalBodyVel}), in our modelling, simplifies to,
+  \begin{equation}
+    \mathrm{v}_2 = \  ^2X_{1} \ \mathrm{v}_{1} + \mathrm{v}_{J}
+  \label{bodyVel}
+  \end{equation} 
+  
+   The twist of a joint, expressed in the child link body frame, is given by,
+  \begin{equation}
+    \mathrm{v}_{J} = \mathrm{S}\dot{q}
+    \label{jointVel}
+  \end{equation}
+  
+  In this work we considered only prismatic and revolute articulation models as they are present in most articulated objects. Assumming these two articulation model types we compute two joint twist quantities, using the relative transformation between the fixed link and movable link. In case of prismatic model hypothesis, the joint velocity $\dot{q}_p$ and the joint axis $\mathrm{S}_P$ are computed from the linear part of the relative transformation. In case of a revolute model hypothesis, the joint velocity $\dot{q}_R$ and the joint axis $\mathrm{S}_R$ are computed from the rotation matrix of the relative transformation. 
+  
+  Now while computing the total momentum using equation(\ref{totalMom}), the information of articulation \textit{model} is encapsulated, which can be represented in short as
+  \begin{equation}
+    h(model)
+  \end{equation}
+  
+  The total wrench acting on a system, expressed in the inertial frame $A$, is given by the summation of external wrenches and gravitational forces on each link.  
+\begin{equation}
+  W=\sum\limits_{i=1}^l \ ^AX_i \ \text{f}_i + \sum\limits_{j=1}^n \ ^AX_j \ m_jg
+\label{generalTotalWrench}
+\end{equation}
+where,
+\begin{itemize}
+  \item $l$ is the number of force-torque sensors present in the articulated object.
+  \item $\mathrm{f}_i$ is the total wrench measured by a force-torque sensor expressed in its local frame of reference.
+  \item $^AX_i$ is the spatial transformation from the force-torque sensor local frame to the inertial frame, $A$.
+  \item $^AX_j$ is the spatial transformation from the body referece frame $B$ to the inertial frame, $A$.
+\end{itemize}
+
+In our modelling, the equation(\ref{generalTotalWrench}) is reduced to,
+\begin{equation}
+  W= X_{ft_1}\text{f}_1 + X_{ft_2}\text{f}_2 +  X_{com_1}m_1g + X_{com_2}m_2g
+\label{TotalWrench}
+\end{equation}
+
+ For any rigid body system, the sum of the external wrenches acting on it is equal to the rate of change of momentum. 
+\begin{equation}
+  W=\dot{h}(model)
+  \label{relation}
+\end{equation}
+
+  Considering the two articulated model hypotheses, the model which solve the following optimization represents the true joint nature of articulation present between the two object parts.
+  \begin{equation}
+    model^*= \argmin\limits_{model}\sum||W-\dot{h}(model)||
+  \end{equation}
+  
+Currently our algorithm \ref{alg:joint estimation} is offline and the recorded data is passed as input. All the quantities denoted in the algorithm are computed with respect to the inertial frame of reference, A. The algorithm outputs two quantities,
+\begin{itemize}
+  \item \textit{Prismatic Hypothesis Error}, which is the value that corresponds to the mismatch between the actual prismatic joint motion and the prismatic articulation model hypothesis,
+  \begin{equation}
+    P_{hyp}= \sum\limits_{data}||W-\dot{h}(prismatic ~model)||
+    \label{phyp}
+  \end{equation}
+  
+  \item \textit{Revolute Hypothesis Error} $(Rhyp)$ which is the value that corresponds to the mismatch between the actual revolute joint motion and the revolute model hypothesis,
+  \begin{equation}
+    R_{hyp}= \sum\limits_{data}||W-\dot{h}(revolute ~model)||
+    \label{rhyp}
+  \end{equation}
+\end{itemize}
+
+\begin{algorithm}[H]
+    \caption{Calculate Joint Hypothesis - $P_{hyp}$, $R_{hyp}$}
+    \label{alg:joint estimation}
+    \begin{algorithmic}[1]
+        \REQUIRE: $Data : t, \textit{P}_1, \textit{P}_2, \mathrm{f}_1,\mathrm{f}_2$ 
+  
+        \FOR{$i < size(Data,1)$}
+        
+           %%Time                            
+           \STATE $dt$ $\leftarrow$ $diff(t)$
+           
+           %\FOR{$i < size(batch,1)$}
+             
+             %%Relative Transformation
+             \STATE $T_1$ $\leftarrow$ $H(P_1)$
+             \STATE $T_2$ $\leftarrow$ $H(P_2)$
+             \STATE $^1T_2$ $\leftarrow$ $T_1^{-1}$ $T_2$
+            
+             %%Prismatic Joint Quantities
+             \STATE $^1P_2$ $\leftarrow$ $linear(^1T_2)$
+             \STATE $q_P$ $\leftarrow$ $norm(^1P_2)$
+             \STATE $\mathrm{S}_P$ $\leftarrow$ $\begin{bmatrix}
+                                                   \frac{^1P_2}{d},0,0,0
+                                                \end{bmatrix}^T$
+                                                
+             \STATE $\dot{q}_P$ $\leftarrow$ $\frac{diff(q_P)}{dt}$ \hspace*{4.5cm} 
+             \STATE $\mathrm{v}_J^P$ $\leftarrow$ $X(T_1)$ $\mathrm{S}_P \ \dot{q}_P$ \hspace*{3.4cm}\hspace{-3.2cm}
+             
+             %%Revolute Joint Quantities                                    
+             \STATE $^1{R}_2$ $\leftarrow$ $rot(^1T_2)$
+             \STATE $axisAngleVector$ $\leftarrow$ $vrrotmat2vec(^1R_2)$
+             \STATE $q_R$ $\leftarrow$ $axisAngleVector(4)$
+             \STATE $\mathrm{S}_R$ $\leftarrow$ $\begin{bmatrix}
+                                                  0,0,0,axisAngleVector(1:3)
+                                                \end{bmatrix}^T$
+             \STATE $\dot{q}_R$ $\leftarrow$ $\frac{diff(q_R)}{dt}$   
+             \STATE $\mathrm{v}_J^R$ $\leftarrow$ $X(T_1)$ $\mathrm{S}_R \ \dot{q}_R$
+             
+             %%Body 1 Velocity
+             %%Linear Velocity
+             \STATE $p_1$ $\leftarrow$ $linear(T_1)$
+             \STATE $v_{1}$ $\leftarrow$ $\frac{diff(p_1)}{dt}$
+        
+             %%Angular Velocity
+             \STATE $R_1$ $\leftarrow$ $rot(T_1)$
+             \STATE $\dot{R}_1$ $\leftarrow$ $\frac{diff(R_1)}{dt}$
+             \STATE $\omega_{1}$ $\leftarrow$ $\dot{R}_1 \ R_1^T$
+             
+             %%Spatial Velocity
+             \STATE $\mathrm{v}_1$ $\leftarrow$ $[v_{1},\omega_{1}]^T$
+               
+             %%Body 2 Velocity
+             \STATE $\mathrm{v}^P_2$ $\leftarrow$ $\mathrm{v}_1$ $+$ $\mathrm{v}_J^P$
+             \STATE $\mathrm{v}^R_2$ $\leftarrow$ $\mathrm{v}_1$ $+$ $\mathrm{v}_J^R$
+        
+        
+             %%System Momentum
+             \STATE $h^P$ $\leftarrow$ $[{X}_1^* \ M_1 \ ^1{X}] \ \mathrm{v}_1$ $+$ $[{X}_2^* \ M_2 \ ^2{X}] \ \mathrm{v}_2^P$
+             \STATE $h^R$ $\leftarrow$ $[{X}_1^* \ M_1 \ ^1{X}] \ \mathrm{v}_1$ $+$ $[{X}_2^* \ M_2 \ ^2X] \ \mathrm{v}_2^R$
+             
+             %%Rate of change of momentum
+             \STATE $\dot{h}^P$ $\leftarrow$ $\frac{diff(h^P)}{dt}$
+             \STATE $\dot{h}^R$ $\leftarrow$ $\frac{diff(h^R)}{dt}$
+             
+             %%Spatial Wrench        
+             \STATE $\text{f}_1$ $\leftarrow$ $X_{left}^*$ $\text{f}_1$
+             \STATE $\text{f}_2$ $\leftarrow$ $X_{right}^*$ $\text{f}_2$
+             \STATE $W$ $\leftarrow$ $\text{f}_1 + \text{f}_2 + {X_{{com}_1}^*} m_1 \text{g} + {X_{{com}_2}^*} m_2 \text{g} $
+             
+             \newpage
+             
+             %%Hypothesis
+             \STATE $P$ $\leftarrow$ $W$ $-$ $\dot{h}^P$
+             \STATE $R$ $\leftarrow$ $W$ $-$ $\dot{h}^R$
+        
+           
+           %\ENDFOR
+           
+        \ENDFOR    
+        \STATE $P_{hyp}$ $\leftarrow$ $norm(sum(P.^*P))$ 
+        \STATE $R_{hyp}$ $\leftarrow$ $norm(sum(R.^*R))$      
+    \end{algorithmic}
+\end{algorithm}
 
 
 
 
 \subsection{Achieved results, dissemination, deviation from the original plan}
-The gantt chart in the figure \ref{gantt} shows the proposed work plan during the project proposal and the actual work progress during the first year of PhD. The software architecture of the framework is not attained yet as I have been looking at multiple fronts to get a coherent understanding of the currently available frameworks and I expect to achieve this by the end of year 2016. The figure \ref{SoftArc} presents a rough software architecture indicating various modules and the submodules of the envisioned framework.
+The gantt chart in the figure \ref{gantt} shows the proposed work plan during the project proposal and the actual work progress during the first year of PhD. The figure software architecture indicated in the figure \ref{SoftArc} is realized by implementing various submodules to a functional level to conduct our experiments in gazebo simulation environment.
 
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[scale=0.3]{figures/SoftwareArch_year1.png}
-	\caption{Software Architechture}		
-	\label{SoftArc}
+We encountered a couple of problems to conduct intented experiments. Firstly, the 3D pose values of the object links using markers is inconsistent, particularly the orientation part. This is due to the noisy visual observations. Secondly, as mentioned before the hands of the iCub robot are quite complex to maintain a stable power grasp. We then decided to make some assumptions that can enable us to perform experiments to validate our momentum based articulation estimation algorithm approach. 
+
+As visual perception is not the main goal of this work, we acquire the pose values directly from the simulation environment using a plugin. Instead of using the robot to manipulate the articulated objects, we applied external forces in simulation to move the object in the direction of allowed motion by the joint. The joints have a damping value of 0:1 and static friction value of 0:1. Link inertial properties i.e., mass, inertia and center of mass are assumed to be known apriori. The range of motion for the prismatic joint is 0:14 meters and for the revolute joint, 95 degrees. We recorded data with five different forces applied at the handle attached to the freely movable link. While the object moves, we record the simulation time, object links 3D pose values and the external wrench values acting on the object links. 
+
+For the data of prismatic joint motion under the influence of different forces, the Fig.(\ref{phypdiff}) shows the value of $P_{hyp}$ is less than $R_{hyp}$. This indicates that for this joint motion, prismatic articulation model is a close match to the actual joint type present in the articulated object.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{figures/phypdiff.png}
+  \caption{Prismatic Motion Hypothesis Error Value}
+  \label{phypdiff}
 \end{figure}
 
-Regarding implementation, I developed a module called simplePMP ~\cite{Tirupachuri:2016:Online} using iKin library module of yarp and a corresponding demo in gazebo simulation with iCub can be found at ~\cite{simplePMP_Demo:2016:Online}. Figure \ref{icub_mani1} shows the gazebo simulation environment of icub and an articulated object which is a planar 2R system(fixed). The transition from figure \ref{icub_mani1} to \ref{icub_mani2} shows iCub reaching and grasping the handle of articulated object. In this simulation the reaching movement was hard-coded as it is not the main focus of my work. The transition from figure \ref{icub_mani2} to \ref{icub_mani3} shows a movement controlled by simplePMP module. The task was to move the end effector towards iCub along a straight line. This simulation shows the ability of simplePMP to perform the motor control part of the robot while grasping an articulated object. Due to the kinematic constraints of the articulated object large interaction forces might arise at the point of contact which prevents iCub to manipulate the object as desired. This problem can be alleviated by the PMP framework which takes advantage of the robot compliance to control the iCub motion.  
+For the data of revolute joint motion under the influence of different forces, the Fig.(\ref{rhypdiff}) shows the value of $R_{hyp}$ is less than $P_{hyp}$. This indicates that for this joint motion, revolute articulation model is a close match to the actual joint type present in the articulated object.
 
-In the above implementation the articulated object is considered to be a fixed base system. Technically a fixed base system is the one in which the pose of the base frame with respect to the inertial reference frame does not change. Practically the base of fixed base systems is attached to the ground tightly and is assumed that it will never move. In this case the ground acts as an infinite force generactor providing reaction forces to the system and greatly limits the passive dynamics. Regarding articulated objects the assumption of fixed base is not true in many everyday occurances and hence I am interested in exploring the idea of considering articulated objects as free floating base systems. So at present I am modelling the dynamics and running simulations on free floating articulated systems. Once this is done preliminary experiments using motor control framework of PMP and articulated objects can be performed in gazebo simulation. 
-
-\begin{figure}[!ht]
-		\centering
-		\begin{subfigure}[b]{0.5\textwidth}
-			\includegraphics[scale=0.299]{figures/icub1.jpg}
-			\caption{  }
-			\label{icub_mani1}
-		\end{subfigure}
-		\begin{subfigure}[b]{0.5\textwidth}
-			\includegraphics[scale=0.3]{figures/icub2.jpg}
-	    		\caption{  }
-	    		\label{icub_mani2}
-		\end{subfigure}
-	    \begin{subfigure}[b]{0.5\textwidth}	
-			\includegraphics[scale=0.295]{figures/icub3.jpg}
-			\caption{  }
-			\label{icub_mani3}
-	 	\end{subfigure}		
-		\caption{iCub manipulating an articulated object}
-		\label{icub_mani}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{figures/rhypdiff.png}
+  \caption{Revolute Motion Hypothesis Error Value}
+  \label{rhypdiff}
 \end{figure}
+
+Even though we made several assumptions about the availability of rigid body pose and inertial parameters of the object models, Gazebo is a fixed time-step simulator, of $1~ms$, which adds considerable numerical errors for a stiff mechanical  system considered in our experiments. In such a noisy environment, our work is a proof of concept proving that we can distinguish between articulation models using the kinematic evolution and interaction wrench information available while manipulating an articulated object.
+
+
 
 \begin{landscape}
 	\begin{figure}[!ht]
