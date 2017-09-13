@@ -34,7 +34,8 @@
    \begin{center}
    	\Huge\textbf{Annual Report}\\
    	\vspace*{2cm}
-   	\Large\textbf{Control and Representation of Articulated Objects: Insights from robots}\\
+   	\Large\textbf{Control and Representation of Articulated Objects: \\
+   			      Insights from robots}\\
    	\vspace*{2cm}
      \Large{PhD Program in Bioengineering Robotics}\\
      \Large{Curriculum: Cognitive Robotics, Interaction and Rehabilitation Technologies} \\ 
@@ -64,7 +65,7 @@
 
 To be effective in an ever changing complex environments that humans live, robots need to have certain cognitive capabilities on par with humans. Most importantly fruitful interactions with the complex dynamic environment is very crucial. 
 
-The research network PACE(Perception and Action in Complex Environments) deals with investigations into human motor control in highly complex environments. This is a fairly complex topic which can be explored at different fronts ranging from theoretical models to rehabilitation technologies. Coming from engineering and robotics background, I strongly believe that investigations in several areas of PACE research can result in endowing robots with humanlike cognitive capabilities for interaction with dynamic and complex environments. 
+The research network PACE (Perception and Action in Complex Environments) deals with investigations into human motor control in highly complex environments. This is a fairly complex topic which can be explored at different fronts ranging from theoretical models to rehabilitation technologies. Coming from engineering and robotics background, I strongly believe that investigations in several areas of PACE research can result in endowing robots with humanlike cognitive capabilities for interaction with dynamic and complex environments. 
 
 The prime case of complex environments considered in my research topic is articulated objects, like doors, scissors etc. Because of their structural rigidity, most robots strain to manipulate kinematically constrained articulated objects without causing large interaction forces. simply put these objects have different parts attached through joint(s) and hence the relative motion of the object parts is restricted according to the type of joint(s). We humans, with excellent perceptual and motor skills, learn to recognize and manipulate them easily. The same capability for robots is very much needed to be effective and productive in naturalistic environments. Hence the title of my topic is ``Control and Representation of Articulated Objects: Insights from robots". \\
 
@@ -241,13 +242,13 @@ where,
    
   The equation(\ref{generalBodyVel}), in our modelling, simplifies to,
   \begin{equation}
-    \mathrm{v}_2 = \  ^2X_{1} \ \mathrm{v}_{1} + \mathrm{v}_{J}
+    \mathrm{v}_2 = \  ^2X_{1} \ \mathrm{v}_{1} + \mathrm{v}_{J2}
   \label{bodyVel}
   \end{equation} 
   
    The twist of a joint, expressed in the child link body frame, is given by,
   \begin{equation}
-    \mathrm{v}_{J} = \mathrm{S}\dot{q}
+    \mathrm{v}_{J2} = \mathrm{S}\dot{q}
     \label{jointVel}
   \end{equation}
   
@@ -319,7 +320,7 @@ Currently our algorithm \ref{alg:joint estimation} is offline and the recorded d
              %%Relative Transformation
              \STATE $T_1$ $\leftarrow$ $H(P_1)$
              \STATE $T_2$ $\leftarrow$ $H(P_2)$
-             \STATE $^1T_2$ $\leftarrow$ $T_1^{-1}$ $T_2$
+             \STATE $^1T_2$ $\leftarrow$ $T_1^{-1}$ $T_2$ \hspace*{3.3cm} \COMMENT{\textit{Object Parts Relative Transformation}}
             
              %%Prismatic Joint Quantities
              \STATE $^1P_2$ $\leftarrow$ $linear(^1T_2)$
@@ -352,38 +353,53 @@ Currently our algorithm \ref{alg:joint estimation} is offline and the recorded d
              \STATE $\omega_{1}$ $\leftarrow$ $\dot{R}_1 \ R_1^T$
              
              %%Spatial Velocity
-             \STATE $\mathrm{v}_1$ $\leftarrow$ $[v_{1},\omega_{1}]^T$
-               
-             %%Body 2 Velocity
-             \STATE $\mathrm{v}^P_2$ $\leftarrow$ $\mathrm{v}_1$ $+$ $\mathrm{v}_J^P$
-             \STATE $\mathrm{v}^R_2$ $\leftarrow$ $\mathrm{v}_1$ $+$ $\mathrm{v}_J^R$
-        
+             \STATE $\mathrm{v}_1$ $\leftarrow$ $[v_{1},\omega_{1}]^T$ \hspace*{3cm} \COMMENT{\textit{First Link Spatial Velocity}}
+             \vspace*{0.3cm}
+		    %%Body 2 Velocity
+             \STATE $\begin{matrix}
+					 \mathrm{v}^P_2 \leftarrow \mathrm{v}_1 + \mathrm{v}_J^P \\
+					 \mathrm{v}^R_2 \leftarrow \mathrm{v}_1 + \mathrm{v}_J^R
+                     \end{matrix}$ \hspace*{3.3cm} \COMMENT{\textit{Second Link Spatial Velocity Under Each Hypothesis}}
+             \vspace*{0.3cm}
         
              %%System Momentum
-             \STATE $h^P$ $\leftarrow$ $[{X}_1^* \ M_1 \ ^1{X}] \ \mathrm{v}_1$ $+$ $[{X}_2^* \ M_2 \ ^2{X}] \ \mathrm{v}_2^P$
-             \STATE $h^R$ $\leftarrow$ $[{X}_1^* \ M_1 \ ^1{X}] \ \mathrm{v}_1$ $+$ $[{X}_2^* \ M_2 \ ^2X] \ \mathrm{v}_2^R$
-             
+             \STATE $\begin{matrix}
+					h^P \leftarrow [{X}_1^* \ M_1 \ ^1{X}] \ \mathrm{v}_1 + [{X}_2^* \ M_2 \ ^2{X}] \ \mathrm{v}_2^P \\
+					h^R \leftarrow [{X}_1^* \ M_1 \ ^1{X}] \ \mathrm{v}_1 + [{X}_2^* \ M_2 \ ^2X] \ \mathrm{v}_2^R
+                     \end{matrix}$ \hspace*{1.3cm} \COMMENT{\textit{Total Momentum Under Each Hypothesis}}
+            \vspace*{0.3cm}
+            
              %%Rate of change of momentum
-             \STATE $\dot{h}^P$ $\leftarrow$ $\frac{diff(h^P)}{dt}$
-             \STATE $\dot{h}^R$ $\leftarrow$ $\frac{diff(h^R)}{dt}$
-             
-             %%Spatial Wrench        
-             \STATE $\text{f}_1$ $\leftarrow$ $X_{left}^*$ $\text{f}_1$
-             \STATE $\text{f}_2$ $\leftarrow$ $X_{right}^*$ $\text{f}_2$
-             \STATE $W$ $\leftarrow$ $\text{f}_1 + \text{f}_2 + {X_{{com}_1}^*} m_1 \text{g} + {X_{{com}_2}^*} m_2 \text{g} $
+             \STATE $\begin{matrix}
+             			\dot{h}^P \leftarrow \frac{diff(h^P)}{dt} \\
+             			\dot{h}^R \leftarrow \frac{diff(h^R)}{dt}
+             		  \end{matrix}$ \hspace*{3.2cm} \COMMENT{\textit{Rate of Change of Momentum Under Each Hypothesis}}
+
+             \vspace*{0.3cm}
+             %%Spatial Wrench
+             \STATE $\begin{matrix}
+             			\text{f}_1 \leftarrow X_{left}^* \text{f}_1 \\
+             			\text{f}_2 \leftarrow X_{right}^* \text{f}_2
+             		  \end{matrix}$ \hspace*{3.3cm} \COMMENT{\textit{Interaction Wrench - Measured at the Handles}}
+             \vspace*{0.3cm}    
+             \STATE $W$ $\leftarrow$ $\text{f}_1 + \text{f}_2 + {X_{{com}_1}^*} m_1 \text{g} + {X_{{com}_2}^*} m_2 \text{g} $ \hspace*{1.3cm} \COMMENT{\textit{Total Wrench}}
              
              \newpage
              
+             \vspace*{0.3cm} 
              %%Hypothesis
-             \STATE $P$ $\leftarrow$ $W$ $-$ $\dot{h}^P$
-             \STATE $R$ $\leftarrow$ $W$ $-$ $\dot{h}^R$
-        
-           
+             \STATE $\begin{matrix}
+             			P \leftarrow W - \dot{h}^P \\
+             			R \leftarrow W - \dot{h}^R
+             		  \end{matrix}$
+             \vspace*{0.3cm} 
            %\ENDFOR
-           
-        \ENDFOR    
-        \STATE $P_{hyp}$ $\leftarrow$ $norm(sum(P.^*P))$ 
-        \STATE $R_{hyp}$ $\leftarrow$ $norm(sum(R.^*R))$      
+        \ENDFOR
+        \vspace*{0.3cm}
+        \STATE $\begin{matrix}
+        			P_{hyp} \leftarrow norm(sum(P.^*P)) \\
+        			R_{hyp} \leftarrow norm(sum(R.^*R))  
+        		  \end{matrix}$    
     \end{algorithmic}
 \end{algorithm}
 
@@ -395,7 +411,7 @@ The gantt chart in the figure \ref{gantt} shows the proposed work plan during th
 
 We encountered a couple of problems to conduct intented experiments. Firstly, the 3D pose values of the object links using markers is inconsistent, particularly the orientation part. This is due to the noisy visual observations. Secondly, as mentioned before the hands of the iCub robot are quite complex to maintain a stable power grasp. We then decided to make some assumptions which enables us to perform experiments to validate our momentum based articulation estimation algorithm approach. 
 
-As visual perception is not the main goal of this work, we acquire the pose values directly from the simulation environment using a plugin. Instead of using the robot to manipulate the articulated objects, we applied external forces in simulation to move the object in the direction of allowed motion by the joint. The joints have a damping value of 0:1 and static friction value of 0:1. Link inertial properties i.e., mass, inertia and center of mass are assumed to be known apriori. The range of motion for the prismatic joint is 0:14 meters and for the revolute joint, 95 degrees. We recorded data with five different forces applied at the handle attached to the freely movable link. While the object moves, we record the simulation time, object links 3D pose values and the external wrench values acting on the object links. 
+As visual perception is not the main goal of this work, we acquire the pose values directly from the simulation environment using a plugin. Instead of using the robot to manipulate the articulated objects, we applied external force in simulation at the handle attached to the freely movable link to move it in the direction of allowed motion by the joint. The joints have a damping value of 0:1 and static friction value of 0:1. Link inertial properties i.e., mass, inertia and center of mass are assumed to be known apriori. The range of motion for the prismatic joint is 0:14 meters and for the revolute joint, 95 degrees. We applied five different forces and while the object moves, we record the simulation time, object links 3D pose values and the external wrench values acting on the object links. 
 
 For the data of prismatic joint motion under the influence of different forces, the Fig.(\ref{phypdiff}) shows the value of $P_{hyp}$ is less than $R_{hyp}$. This indicates that for this joint motion, prismatic articulation model is a close match to the actual joint type present in the articulated object.
 
