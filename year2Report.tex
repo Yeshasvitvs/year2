@@ -69,12 +69,14 @@ The research network PACE (Perception and Action in Complex Environments) deals 
 
 The prime case of complex environments considered in my research topic is articulated objects, like doors, scissors etc. Because of their structural rigidity, most robots strain to manipulate kinematically constrained articulated objects without causing large interaction forces. simply put these objects have different parts attached through joint(s) and hence the relative motion of the object parts is restricted according to the type of joint(s). We humans, with excellent perceptual and motor skills, learn to recognize and manipulate them easily. The same capability for robots is very much needed to be effective and productive in naturalistic environments. Hence the title of my topic is ``Control and Representation of Articulated Objects: Insights from robots". \\
 
-The technical objectives can be summarized as 
+The problem here is a bit of catch 22, to successfully manipulate an unknown articulated object a robot needs to first get information on the articulation model but this information can only be obtained reliable by manipulating the object. So the technical objectives can be summarized as:
+
 \begin{itemize}
-	\item A computational framework for articulation object model estimation
-	\item Implementing cognitive models of sensorimotor signal processing in interaction 
-	\item Validating the framework with experiments using humanoid iCub robot
+	\item Developing an algorithm to estimate the articulation model using multi-modal sensory information available during manipulation
+	\item Implementing a new control architecture to manipulate an articulated object with limited a-priori knowledge of the object
+	\item Validation with experiments using humanoid iCub robot
 \end{itemize}
+
 \subsection{State of the art and Innovation}
 State-of-the-art research in articulation model estimation has been mainly focused on exploting visual perception. For effective manipulation of articulation objects adequate information of the shape, pose and the kinematic structure of the objects and its parts is crucial. Pose tracking generally assumes the shape of the objects or object parts and utilizes segmentation in the visual input. Shape reconstruction can be achieved using integration of multiple poses and then the kinematic structure of an articulated object can be achieved using the above information on the object parts.
 
@@ -104,10 +106,24 @@ Martin-Martin Roberto and Oliver Brock ~\cite{martin2014online} presented an onl
 
 The choice of a well established framework on human motor control to facilitate the basic software infrastructure for my research is a crucial step. Towards this end I did review of papers on the framework of Active Inference ~\cite{friston2015active},~\cite{friston2011action} put forward by Prof. Karl Friston. Also I studied the framework of Passive Motion Paradigm(PMP) ~\cite{mohan2011passive}, ~\cite{mohan2013inference} championed by our colleagues Dr. Vishwanathan Mohan and Prof. Pietro Morasso from the Italian Institute of Technology.
 
-Visual information has been used as the most dominant sensory modality in articulation model estimation. But while manipulating an articulated object, another key information available is the interaction wrench. As a part of the Dynamic Touch and Interaction team and in collaboration with Dynamic Interaction Control  team, I am  exploring the possibilities of using interaction wrench along with visual perception  to estimate the kinematic structure and dynamic properties of articulated objects. From the visual perception kinematic properties of the artiulated can be estimated but by also using interaction wrench information we believe one can estimate the dynamic properties too. This facilititates for better control during object manipulation. A bayesian framework is proposed in ~\cite{nori2015simultaneous} for simultaneous state and dynamics estimation in presence of multiple redundant sensory information. But in the case of manipulation of articulated objects state information will estimated using visual inputs. 
+Visual information has been used as the most dominant sensory modality in articulation model estimation. But while manipulating an articulated object, another key information available is the interaction wrench. As a part of the Dynamic Touch and Interaction team and in collaboration with Dynamic Interaction Control  team, I am  exploring the possibilities of using interaction wrench along with visual perception  to estimate the kinematic structure and dynamic properties of articulated objects. From the visual perception kinematic properties of the artiulated can be estimated but by also using interaction wrench information we believe one can estimate the dynamic properties too. This facilititates for better control during object manipulation.
  
 \subsection{Methodology and Workplan}
 \subsubsection{Modelling}
+When a robot is trying to manipulate an object there are two mechanical systems involved in the interaction, exchanging forces and torques at the point of contacts. Applying Euler-Poincar\'e formalism [\cite{marsden2013introduction}, Ch. 13.5] to the multi-body systems yields the following equations of motion:
+
+\begin{equation}
+	M_{\scalebox{.5}R}(q)\dot{v}_{\scalebox{.5}R} + C_{\scalebox{.5}R}(q,v)v_{\scalebox{.5}R} + G_{\scalebox{.5}R}(q) = B\tau + \sum_{k=1}^{n_c} J_{{\scalebox{.5}{RC}}_k}^T f_{\scalebox{.5}{Rk}}
+	\label{dyn_robot}
+\end{equation}
+
+\begin{equation}
+	M_{\scalebox{.5}O}(q)\dot{v}_{\scalebox{.5}O} + C_{\scalebox{.5}O}(q,v)v_{\scalebox{.5}O} + G_{\scalebox{.5}O}(q) = \sum_{k=1}^{n_c} J_{{\scalebox{.5}{OC}}_k}^T f_{\scalebox{.5}{Ok}}
+	\label{dyn_object}
+\end{equation}
+
+The equation (\ref{dyn_robot}) is of the robot and the equation (\ref{dyn_object}) of the articulated object. $M$ is the mass matrix, $C$ is the Coriolis matrix, $G$ is the gravity term, $B$ is a selection matrix, $\tau$ is a vector representing the actuation joint torques, $n_c$ number of point of contacts and $f_k$ denotes the external applied on the system at the k-th point of contact. Note that in the case of articulated objects joint torques are not present as these objects are passive. A bayesian framework is proposed in ~\cite{nori2015simultaneous} for simultaneous state and dynamics estimation in presence of multiple redundant sensory information and has been validated using the iCub robot. We are interested estimating the articulation model present in the object.
+
 
 We modelled two simple artitulated objects using Simulation Description Format (SDF) to be used in Gazebo simulation environment. The objects contain two links connected through a \textit{prismatic} joint, \textit{\textbf{P}} in one (Fig. \ref{pmodel}) and a \textit{revolute} joint, \textit{\textbf{R}} in the other  (Fig. \ref{rmodel}). The reasoning behind this modelling is that most real life articulated objects can be represented in this simplified form. The cylindrical elements in black color are the handle links and the rectangular elements in yellow color are articulated object links. The handle links of the articulated objects are connected to object links through a fixed joint and one of the handles is anchored to the world in gazebo through a fixed joint and this also anchors the object link attached to that handle. The reasoning behind this choice is that many articulated objects have one of their links either grounded or are quite heavy to move compared to the freely movable link. 
 
@@ -129,7 +145,7 @@ We modelled two simple artitulated objects using Simulation Description Format (
 \end{figure}
 
 \subsubsection{Experimental Scenario}
-The experimental scenario we want to test is as indicated in the figure \ref{icub_object}, where the icub robot is holding the articulated object at the handles and performs explorative actions to estimate the
+The experimental scenario we want to test is as indicated in the figure \ref{icub_object}, where the icub robot is holding an articulated object at the handles and performs explorative actions to estimate the
 articulation model present between the links.
 
 \begin{figure}[H]
